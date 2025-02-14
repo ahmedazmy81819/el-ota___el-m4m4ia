@@ -71,6 +71,31 @@ function createParticles(x, y, color) {
     }
 }
 
+// Add particle system for movement
+function createMoveParticle(x, y) {
+    const particle = document.createElement('div');
+    particle.className = 'move-particle';
+    particle.style.cssText = `
+        position: absolute;
+        left: ${x}px;
+        top: ${y}px;
+        width: 5px;
+        height: 5px;
+        background: rgba(46, 204, 113, 0.6);
+        border-radius: 50%;
+        pointer-events: none;
+    `;
+    document.body.appendChild(particle);
+    
+    particle.animate([
+        { transform: 'scale(1)', opacity: 1 },
+        { transform: 'scale(0)', opacity: 0 }
+    ], {
+        duration: 700,
+        easing: 'ease-out'
+    }).onfinish = () => particle.remove();
+}
+
 // Game state
 let maze = [];
 let player = {
@@ -423,6 +448,23 @@ function drawGoal() {
     ctx.textBaseline = 'middle';
     ctx.fillText('🏁', 0, 0);
     
+    // Add floating animation
+    const floatOffset = Math.sin(Date.now() / 500) * 3;
+    ctx.translate(0, floatOffset);
+    
+    // Add rotating glow
+    const glowAngle = Date.now() / 1000;
+    const glowX = Math.cos(glowAngle) * config.cellSize;
+    const glowY = Math.sin(glowAngle) * config.cellSize;
+    
+    ctx.beginPath();
+    const gradient = ctx.createRadialGradient(glowX, glowY, 0, 0, 0, config.cellSize * 3);
+    gradient.addColorStop(0, 'rgba(46, 204, 113, 0.3)');
+    gradient.addColorStop(1, 'rgba(46, 204, 113, 0)');
+    ctx.fillStyle = gradient;
+    ctx.arc(0, 0, config.cellSize * 3, 0, Math.PI * 2);
+    ctx.fill();
+    
     ctx.restore();
 }
 
@@ -483,7 +525,7 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-// New: Update player movement using keyboard controls
+// Enhance player movement with particles
 function updatePlayer() {
     const oldX = player.x, oldY = player.y;
     // Check one move per key press then reset flag
@@ -503,8 +545,17 @@ function updatePlayer() {
         if (player.x < config.mazeSize - 1 && maze[player.y][player.x + 1] === 0) player.x++;
         keys.ArrowRight = keys.d = false;
     }
-    // If the move would collide with a wall, you could optionally call respawnPlayer();
-    // if (maze[player.y][player.x] === 1) { respawnPlayer(); }
+    // Add particles if player moved
+    if (oldX !== player.x || oldY !== player.y) {
+        const centerX = oldX * config.cellSize + config.cellSize/2;
+        const centerY = oldY * config.cellSize + config.cellSize/2;
+        for (let i = 0; i < 3; i++) {
+            createMoveParticle(
+                centerX + (Math.random() - 0.5) * 10,
+                centerY + (Math.random() - 0.5) * 10
+            );
+        }
+    }
 }
 
 // Add touch controls for mobile devices
@@ -587,9 +638,46 @@ window.addEventListener('resize', () => {
     }
 });
 
+// Add celebration effect on level completion
+function onLevelComplete() {
+    const confetti = [];
+    for (let i = 0; i < 50; i++) {
+        confetti.push({
+            x: canvas.width * Math.random(),
+            y: -20,
+            size: Math.random() * 8 + 4,
+            color: ['#2ecc71', '#3498db', '#e74c3c', '#f1c40f'][Math.floor(Math.random() * 4)],
+            speed: Math.random() * 5 + 2,
+            angle: Math.random() * Math.PI * 2
+        });
+    }
+    
+    function animateConfetti() {
+        if (!confetti.length) return;
+        
+        ctx.save();
+        confetti.forEach((c, i) => {
+            c.y += c.speed;
+            c.x += Math.sin(c.angle) * 2;
+            c.angle += 0.1;
+            
+            ctx.fillStyle = c.color;
+            ctx.fillRect(c.x, c.y, c.size, c.size);
+            
+            if (c.y > canvas.height) confetti.splice(i, 1);
+        });
+        ctx.restore();
+        
+        requestAnimationFrame(animateConfetti);
+    }
+    
+    animateConfetti();
+}
+
 // Modify win condition
 function checkWin() {
     if (player.x === goal.x && player.y === goal.y) {
+        onLevelComplete();
         updateHighScore();
         
         if (config.currentLevel === config.totalLevels) {

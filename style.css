@@ -31,6 +31,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
+    background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
 .game-header {
@@ -44,7 +46,7 @@ body {
     height: auto;
     background: #34495e;
     border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
     border: 3px solid #2ecc71;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
@@ -55,6 +57,11 @@ body {
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    transition: all 0.3s ease;
+}
+
+#gameCanvas:hover {
+    transform: scale(1.01);
 }
 
 .controls {
@@ -122,8 +129,8 @@ button:hover {
 .mobile-controls button {
     width: 60px;
     height: 60px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(46, 204, 113, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(46, 204, 113, 0.8);
     border-radius: 50%;
     font-size: 24px;
     padding: 0;
@@ -132,8 +139,15 @@ button:hover {
     justify-content: center;
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     color: white;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+}
+
+.mobile-controls button:active {
+    transform: scale(0.95);
+    background: rgba(46, 204, 113, 0.3);
 }
 
 /* Arrange left, down, right in a row */
@@ -151,7 +165,7 @@ button:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(46,204,113,0.1) 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -160,10 +174,11 @@ button:hover {
     color: gold;
     text-align: center;
     font-size: 24px;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .victory-screen button {
-    background: #25d366;
+    background: linear-gradient(45deg, #25d366, #128C7E);
     color: white;
     border: none;
     padding: 15px 30px;
@@ -172,6 +187,7 @@ button:hover {
     margin-top: 20px;
     cursor: pointer;
     transition: transform 0.2s;
+    animation: pulse 2s infinite;
 }
 
 .victory-screen button:hover {
@@ -182,10 +198,13 @@ button:hover {
     position: fixed;
     top: 20px;
     left: 20px;
-    background: rgba(0, 0, 0, 0.7);
+    background: linear-gradient(45deg, rgba(0,0,0,0.7) 0%, rgba(46,204,113,0.3) 100%);
     padding: 10px 20px;
     border-radius: 20px;
     font-size: 18px;
+    backdrop-filter: blur(5px);
+    animation: pulse 2s infinite;
+    border: 2px solid rgba(46, 204, 113, 0.3);
 }
 
 .start-screen {
@@ -194,11 +213,12 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    animation: fadeIn 1s ease-out;
 }
 
 .start-content {
@@ -210,6 +230,16 @@ button:hover {
     color: #2c3e50;
     box-shadow: 0 0 30px rgba(0,0,0,0.3);
     text-align: center;
+    animation: slideUp 0.5s ease-out;
+}
+
+/* On mobile devices, allow the start screen to scroll vertically */
+@media (max-width: 600px) {
+    #startScreen {
+        max-height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 .game-rules {
@@ -277,4 +307,33 @@ button:hover {
 .start-button:hover {
     background: #27ae60;
     transform: scale(1.05);
+}
+
+/* Add sparkle animation for the cat */
+@keyframes sparkle {
+    0%, 100% { filter: drop-shadow(0 0 3px gold); }
+    50% { filter: drop-shadow(0 0 8px gold); }
+}
+
+/* Add pulse animation for buttons */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Add floating animation for goal flag */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
