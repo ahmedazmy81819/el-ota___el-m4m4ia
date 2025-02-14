@@ -630,6 +630,28 @@ function updateLevelDisplay() {
     document.getElementById('level').textContent = config.currentLevel;
 }
 
+// New: Draw hint path if playing longer than 300 seconds
+function drawHintPath() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    if (elapsed > 300) {
+        const hintPath = findPath(player.x, player.y, goal.x, goal.y);
+        if (hintPath) {
+            ctx.save();
+            ctx.lineWidth = config.cellSize / 2;
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)'; // Bright yellow hint line
+            ctx.beginPath();
+            const [startX, startY] = hintPath[0];
+            ctx.moveTo(startX * config.cellSize + config.cellSize/2, startY * config.cellSize + config.cellSize/2);
+            for (let i = 1; i < hintPath.length; i++) {
+                const [x, y] = hintPath[i];
+                ctx.lineTo(x * config.cellSize + config.cellSize/2, y * config.cellSize + config.cellSize/2);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+}
+
 // تحديث حلقة اللعبة
 function gameLoop() {
     if (gameActive) {
@@ -640,6 +662,8 @@ function gameLoop() {
     
     drawMaze();
     drawGoal();
+    // New: Draw hint path if needed
+    drawHintPath();
     drawPlayer();
     checkWin();
     updateLevelDisplay();
