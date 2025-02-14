@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة القطة في المتاهة</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="startScreen" class="start-screen">
+        <div class="start-content">
+            <h1>مغامرة القطة في المتاهة</h1>
+            <div class="game-rules">
+                <h2>قوانين اللعبة:</h2>
+                <ul>
+                    <li>ساعد القطة للوصول للنقطة الخضراء في نهاية كل متاهة</li>
+                    <li>استخدم الأسهم في لوحة المفاتيح للتحرك ⬅️ ➡️ ⬆️ ⬇️</li>
+                    <li>في الموبايل استخدم الأزرار المخصصة للحركة</li>
+                    <li>اللعبة تتكون من 30 مرحلة متزايدة الصعوبة</li>
+                    <li>كل مرحلة أصعب من السابقة</li>
+                </ul>
+                <div class="warning">
+                    <h3>⚠️ ملاحظة هامة</h3>
+                    <p>خلي بالك يا عسل، مفيش save في اللعبة يعني لازم تخلص المراحل كلها على مرة واحدة! 🎮</p>
+                    <p class="funny-note">لو سألتني ايه اللي جاب القطة للمتاهة دي؟ هقولك انت ايه اللي جابك الموقع دا وانت ثانوية عامة! 😂</p>
+                </div>
+            </div>
+            <button id="startGame" class="start-button">ابدأ اللعب</button>
+        </div>
+    </div>
+
+    <div id="gameContainer" class="game-container" style="display: none;">
+        <div class="game-header">
+            <h1>Cat Maze Adventure</h1>
+            <div class="level-display">Level: <span id="level">1</span>/30</div>
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="time">Time: <span id="time">0</span>s</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="mobile-controls">
+            <!-- تغيير ترتيب الأزرار ليشبه البلايستيشن -->
+            <button id="up">⬆</button>
+            <button id="right">⮕</button>
+            <button id="down">⬇</button>
+            <button id="left">⬅</button>
+        </div>
+        <div class="controls">
+            <p>Use Arrow keys or WASD to move</p>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
