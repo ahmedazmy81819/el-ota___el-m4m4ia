@@ -1,3 +1,108 @@
+/* إضافة في بداية الملف */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    background: #2c3e50;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: white;
+    overflow: hidden; /* Prevent scrolling */
+    -webkit-touch-callout: none; /* منع قائمة iOS */
+}
+
+.game-container {
+    text-align: center;
+    width: 100%;
+    height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.game-header {
+    margin-bottom: 20px;
+}
+
+#gameCanvas {
+    max-width: 90vmin;
+    max-height: 90vmin;
+    width: auto;
+    height: auto;
+    background: #34495e;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    border: 3px solid #2ecc71;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+    margin: auto;                     /* Center horizontally */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* تصميم أزرار التحكم الجديدة */
+.mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.horizontal-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.control-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-button:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.9);
+}
+
+/* إخفاء الأزرار في الشاشات الكبيرة */
+@media (hover: hover) and (pointer: fine) {
+    .mobile-controls {
+        display: none;
+    }
+}
+
 .touch-control-area {
     display: none;
 }

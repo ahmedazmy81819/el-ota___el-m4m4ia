@@ -450,6 +450,27 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
+// إضافة دالة للتعامل مع النقر على الأزرار
+document.getElementById('up').addEventListener('click', () => {
+    keys.ArrowUp = true;
+    setTimeout(() => { keys.ArrowUp = false; }, 100);
+});
+
+document.getElementById('down').addEventListener('click', () => {
+    keys.ArrowDown = true;
+    setTimeout(() => { keys.ArrowDown = false; }, 100);
+});
+
+document.getElementById('left').addEventListener('click', () => {
+    keys.ArrowLeft = true;
+    setTimeout(() => { keys.ArrowLeft = false; }, 100);
+});
+
+document.getElementById('right').addEventListener('click', () => {
+    keys.ArrowRight = true;
+    setTimeout(() => { keys.ArrowRight = false; }, 100);
+});
+
 // Replace the updatePlayer function
 function updatePlayer() {
     if (!gameActive || player.moving) return;
@@ -623,51 +644,6 @@ window.addEventListener('resize', () => {
     draw();
 });
 
-// Replace initMobileControls function with this new version
-function initMobileControls() {
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    if (isMobile) {
-        // Create direction buttons container
-        const buttonsDiv = document.createElement('div');
-        buttonsDiv.className = 'direction-buttons';
-        
-        // Create buttons
-        const buttons = {
-            up: createDirectionButton('⬆', 'button-up', 'ArrowUp'),
-            down: createDirectionButton('⬇', 'button-down', 'ArrowDown'),
-            left: createDirectionButton('⬅', 'button-left', 'ArrowLeft'),
-            right: createDirectionButton('➡', 'button-right', 'ArrowRight')
-        };
-        
-        // Add buttons to container
-        Object.values(buttons).forEach(button => buttonsDiv.appendChild(button));
-        
-        // Add container to document
-        document.body.appendChild(buttonsDiv);
-    }
-}
-
-// Add new helper function to create direction buttons
-function createDirectionButton(text, className, keyName) {
-    const button = document.createElement('div');
-    button.className = `direction-button ${className}`;
-    button.textContent = text;
-    
-    // Handle touch events
-    button.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys[keyName] = true;
-    }, { passive: false });
-    
-    button.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys[keyName] = false;
-    }, { passive: false });
-    
-    return button;
-}
-
 // Initialize game only after clicking start
 startButton.addEventListener('click', () => {
     startScreen.style.display = 'none';
@@ -679,7 +655,6 @@ startButton.addEventListener('click', () => {
 function startGame() {
     initCanvas();
     initMaze();
-    initMobileControls();
     gameLoop();
 }
 
