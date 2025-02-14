@@ -75,11 +75,7 @@ function createParticles(x, y, color) {
 let maze = [];
 let player = {
     x: 1,
-    y: 1,
-    targetX: 1,
-    targetY: 1,
-    moving: false,
-    progress: 1
+    y: 1
 };
 let score = 0;
 let startTime = Date.now();
@@ -112,24 +108,73 @@ function updateHighScore() {
     localStorage.setItem('mazeHighScores', JSON.stringify(highScores));
 }
 
+// Add a global goal variable for dynamic assignment
+let goal = { x: 1, y: 1 };
+
+// New: Compute the farthest (and thus longest) path from start using BFS
+function computeLongestPath() {
+    let dist = Array.from({ length: config.mazeSize }, () => Array(config.mazeSize).fill(-1));
+    let queue = [];
+    dist[1][1] = 0;
+    queue.push([1, 1]);
+    let farthest = { x: 1, y: 1, d: 0 };
+    while (queue.length) {
+        const [x, y] = queue.shift();
+        const d = dist[y][x];
+        if (d > farthest.d) {
+            farthest = { x, y, d };
+        }
+        for (let [dx, dy] of [[0,1],[1,0],[0,-1],[-1,0]]) {
+            const nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < config.mazeSize && ny >= 0 && ny < config.mazeSize &&
+                maze[ny][nx] === 0 && dist[ny][nx] === -1) {
+                dist[ny][nx] = d + 1;
+                queue.push([nx, ny]);
+            }
+        }
+    }
+    return farthest;
+}
+
 // Initialize maze
 function initMaze() {
     maze = Array(config.mazeSize).fill().map(() => Array(config.mazeSize).fill(1));
     generateMaze(1, 1);
+    respawnPlayer();
     
-    // وضع القطة في نقطة البداية
-    player = {
-        x: 1,
-        y: 1,
-        targetX: 1,
-        targetY: 1,
-        moving: false,
-        progress: 1
-    };
+    // Set goal to the farthest reachable cell from the start
+    const farthest = computeLongestPath();
+    goal.x = farthest.x;
+    goal.y = farthest.y;
+    
+    // Force an open corridor along the longest path from player's start to goal
+    const longestPath = findPath(player.x, player.y, goal.x, goal.y);
+    if (longestPath) {
+        longestPath.forEach(([px, py]) => {
+            maze[py][px] = 0;
+        });
+    }
     
     score = 0;
     startTime = Date.now();
     gameActive = true;
+}
+
+// New: Respawn player function (searches for a valid cell starting from top-left)
+function respawnPlayer() {
+    // Check the (1,1) cell first; if not valid, scan for the first available path cell
+    if (maze[1] && maze[1][1] === 0) {
+        player = { x: 1, y: 1 };
+    } else {
+        for (let y = 0; y < config.mazeSize; y++) {
+            for (let x = 0; x < config.mazeSize; x++) {
+                if (maze[y][x] === 0) {
+                    player = { x, y };
+                    return;
+                }
+            }
+        }
+    }
 }
 
 // تحديث دالة توليد المتاهة
@@ -312,18 +357,6 @@ function draw() {
         });
     });
     
-    // Draw player with smaller size
-    ctx.fillStyle = config.playerColor;
-    ctx.beginPath();
-    ctx.arc(
-        player.x * config.cellSize + config.cellSize/2,
-        player.y * config.cellSize + config.cellSize/2,
-        (config.cellSize/2) * config.playerSize,  // Smaller radius
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
-    
     // Draw goal
     ctx.fillStyle = config.goalColor;
     ctx.fillRect(
@@ -367,8 +400,8 @@ function drawPlayer() {
 }
 
 function drawGoal() {
-    const goalX = (config.mazeSize-2) * config.cellSize + config.cellSize/2;
-    const goalY = (config.mazeSize-2) * config.cellSize + config.cellSize/2;
+    const goalX = goal.x * config.cellSize + config.cellSize / 2;
+    const goalY = goal.y * config.cellSize + config.cellSize / 2;
     
     ctx.save();
     ctx.translate(goalX, goalY);
@@ -450,63 +483,86 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-// إضافة دالة للتعامل مع النقر على الأزرار
-document.getElementById('up').addEventListener('click', () => {
-    keys.ArrowUp = true;
-    setTimeout(() => { keys.ArrowUp = false; }, 100);
-});
-
-document.getElementById('down').addEventListener('click', () => {
-    keys.ArrowDown = true;
-    setTimeout(() => { keys.ArrowDown = false; }, 100);
-});
-
-document.getElementById('left').addEventListener('click', () => {
-    keys.ArrowLeft = true;
-    setTimeout(() => { keys.ArrowLeft = false; }, 100);
-});
-
-document.getElementById('right').addEventListener('click', () => {
-    keys.ArrowRight = true;
-    setTimeout(() => { keys.ArrowRight = false; }, 100);
-});
-
-// Replace the updatePlayer function
+// New: Update player movement using keyboard controls
 function updatePlayer() {
-    if (!gameActive || player.moving) return;
-
-    let dx = 0;
-    let dy = 0;
-    
-    // Get movement input
-    if (keys.ArrowUp || keys.w) dy = -1;
-    else if (keys.ArrowDown || keys.s) dy = 1;
-    else if (keys.ArrowLeft || keys.a) dx = -1;
-    else if (keys.ArrowRight || keys.d) dx = 1;
-
-    // Start new movement if we have input and aren't already moving
-    if ((dx !== 0 || dy !== 0) && !player.moving) {
-        const newX = Math.round(player.x) + dx;
-        const newY = Math.round(player.y) + dy;
-        
-        if (isValidMove(newX, newY)) {
-            player.targetX = newX;
-            player.targetY = newY;
-            player.moving = true;
-            player.progress = 0;
-        }
+    const oldX = player.x, oldY = player.y;
+    // Check one move per key press then reset flag
+    if (keys.ArrowUp || keys.w) {
+        if (player.y > 0 && maze[player.y - 1][player.x] === 0) player.y--;
+        keys.ArrowUp = keys.w = false;
     }
+    if (keys.ArrowDown || keys.s) {
+        if (player.y < config.mazeSize - 1 && maze[player.y + 1][player.x] === 0) player.y++;
+        keys.ArrowDown = keys.s = false;
+    }
+    if (keys.ArrowLeft || keys.a) {
+        if (player.x > 0 && maze[player.y][player.x - 1] === 0) player.x--;
+        keys.ArrowLeft = keys.a = false;
+    }
+    if (keys.ArrowRight || keys.d) {
+        if (player.x < config.mazeSize - 1 && maze[player.y][player.x + 1] === 0) player.x++;
+        keys.ArrowRight = keys.d = false;
+    }
+    // If the move would collide with a wall, you could optionally call respawnPlayer();
+    // if (maze[player.y][player.x] === 1) { respawnPlayer(); }
 }
 
-// إضافة دالة للتحقق من صلاحية الحركة
-function isValidMove(x, y) {
-    // التأكد من أن الموقع الجديد داخل المتاهة
-    if (x < 0 || x >= config.mazeSize || y < 0 || y >= config.mazeSize) {
-        return false;
+// Add touch controls for mobile devices
+let touchStartX = null, touchStartY = null;
+canvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+});
+canvas.addEventListener('touchend', (e) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    // Determine dominant swipe direction (threshold set to 30px)
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+        if (dx > 0 && player.x < config.mazeSize - 1 && maze[player.y][player.x + 1] === 0) {
+            player.x++;
+        } else if (dx < 0 && player.x > 0 && maze[player.y][player.x - 1] === 0) {
+            player.x--;
+        }
+    } else if (Math.abs(dy) > 30) {
+        if (dy > 0 && player.y < config.mazeSize - 1 && maze[player.y + 1][player.x] === 0) {
+            player.y++;
+        } else if (dy < 0 && player.y > 0 && maze[player.y - 1][player.x] === 0) {
+            player.y--;
+        }
     }
+    touchStartX = touchStartY = null;
+});
+
+// New: Attach event listeners to mobile control buttons
+function attachMobileControls() {
+    const btnUp = document.getElementById('up');
+    const btnDown = document.getElementById('down');
+    const btnLeft = document.getElementById('left');
+    const btnRight = document.getElementById('right');
     
-    // التحقق من عدم وجود جدار
-    return maze[y][x] === 0;
+    btnUp.addEventListener('click', () => {
+        if (player.y > 0 && maze[player.y - 1][player.x] === 0) {
+            player.y--;
+        }
+    });
+    btnDown.addEventListener('click', () => {
+        if (player.y < config.mazeSize - 1 && maze[player.y + 1][player.x] === 0) {
+            player.y++;
+        }
+    });
+    btnLeft.addEventListener('click', () => {
+        if (player.x > 0 && maze[player.y][player.x - 1] === 0) {
+            player.x--;
+        }
+    });
+    btnRight.addEventListener('click', () => {
+        if (player.x < config.mazeSize - 1 && maze[player.y][player.x + 1] === 0) {
+            player.x++;
+        }
+    });
 }
 
 // Update time
@@ -531,28 +587,9 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Add smooth movement processing to gameLoop
-function processMovement() {
-    if (player.moving) {
-        player.progress += config.playerSpeed;
-        
-        if (player.progress >= 1) {
-            // Complete the movement
-            player.x = player.targetX;
-            player.y = player.targetY;
-            player.moving = false;
-            player.progress = 1;
-        } else {
-            // Interpolate position
-            player.x = player.x + (player.targetX - player.x) * player.progress;
-            player.y = player.y + (player.targetY - player.y) * player.progress;
-        }
-    }
-}
-
 // Modify win condition
 function checkWin() {
-    if (player.x === config.mazeSize - 2 && player.y === config.mazeSize - 2) {
+    if (player.x === goal.x && player.y === goal.y) {
         updateHighScore();
         
         if (config.currentLevel === config.totalLevels) {
@@ -567,7 +604,8 @@ function checkWin() {
 
 // Add victory celebration
 function showFinalVictory() {
-    const message = "أنت الفاجر! أنت الجامد! أنت المطرشك! أنت أبو جلابية اللي مبيشفش!";
+    const elapsed = Math.floor((Date.now() - startTime) / 1000); // elapsed time in seconds
+    const message = `تم انهاء اللعبه في خلال ${elapsed} ثانية!`; // Final message with elapsed time
     
     const victoryDiv = document.createElement('div');
     victoryDiv.className = 'victory-screen';
@@ -596,21 +634,13 @@ function updateLevelDisplay() {
 function gameLoop() {
     if (gameActive) {
         updatePlayer();
-        processMovement();
     }
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // رسم المتاهة أولاً
     drawMaze();
-    
-    // ثم رسم الهدف مع التوهج
     drawGoal();
-    
-    // أخيراً رسم القطة مع التوهج
     drawPlayer();
-    
-    // تحديث الحالة
     checkWin();
     updateLevelDisplay();
     
@@ -648,6 +678,7 @@ window.addEventListener('resize', () => {
 startButton.addEventListener('click', () => {
     startScreen.style.display = 'none';
     gameContainer.style.display = 'block';
+    attachMobileControls();
     startGame();
 });
 

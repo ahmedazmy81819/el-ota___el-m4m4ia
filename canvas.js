@@ -8,14 +8,6 @@ const cellSize = 30;   // Size of each cell in the maze
 canvas.width = mazeWidth * cellSize;
 canvas.height = mazeHeight * cellSize;
 
-const cat = {
-    x: 0,
-    y: 0,
-    width: cellSize,
-    height: cellSize,
-    color: 'orange'
-};
-
 let maze = Array.from({ length: mazeHeight }, () => Array(mazeWidth).fill(1));
 
 // Directions for movement
@@ -45,12 +37,6 @@ generateMaze(1, 1); // Start generating from (1, 1)
 
 const goal = { x: (mazeWidth - 2) * cellSize, y: (mazeHeight - 2) * cellSize, width: cellSize, height: cellSize, color: 'green' };
 
-function drawCat() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-    ctx.fillStyle = cat.color;
-    ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
-}
-
 function drawMaze() {
     ctx.fillStyle = 'red';
     for (let y = 0; y < mazeHeight; y++) {
@@ -68,7 +54,6 @@ function drawGoal() {
 }
 
 function initializeGame() {
-    drawCat();
     drawMaze();
     drawGoal();
     updateGame(); // Ensure the game updates correctly

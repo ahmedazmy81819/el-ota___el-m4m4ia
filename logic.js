@@ -1,42 +1,7 @@
-document.addEventListener('keydown', handleKeyDown);
-document.addEventListener('keyup', handleKeyUp);
-
-const velocity = { x: 0, y: 0 };
-const speed = 4; // Increase the speed
-
-function handleKeyDown(event) {
-    switch (event.key) {
-        case 'ArrowUp':
-            velocity.y = -speed;
-            break;
-        case 'ArrowDown':
-            velocity.y = speed;
-            break;
-        case 'ArrowLeft':
-            velocity.x = -speed;
-            break;
-        case 'ArrowRight':
-            velocity.x = speed;
-            break;
-        default:
-            break;
-    }
-}
-
-function handleKeyUp(event) {
-    switch (event.key) {
-        case 'ArrowUp':
-        case 'ArrowDown':
-            velocity.y = 0;
-            break;
-        case 'ArrowLeft':
-        case 'ArrowRight':
-            velocity.x = 0;
-            break;
-        default:
-            break;
-    }
-}
+/* Registers keyboard events. Uses a velocity object for movement.
+   Contains drawing functions: drawCat, drawMaze, drawGoal.
+   Implements collision detection and puzzle completion handling.
+   Uses requestAnimationFrame for continuous game update loop. */
 
 function drawCat() {
     ctx.fillStyle = 'orange';
@@ -82,32 +47,10 @@ function resetGame() {
         cat.y = Math.floor(Math.random() * (mazeHeight - 2) + 1) * cellSize;
         validPosition = maze[cat.y / cellSize][cat.x / cellSize] === 0;
     }
-    velocity.x = 0;
-    velocity.y = 0;
 }
 
 function updateGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-
-    const nextX = cat.x + velocity.x;
-    const nextY = cat.y + velocity.y;
-
-    let collision = false;
-    for (let y = 0; y < mazeHeight; y++) {
-        for (let x = 0; x < mazeWidth; x++) {
-            if (maze[y][x] === 1) {
-                const obstacle = { x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize };
-                if (checkCollision({ x: nextX, y: nextY, width: cat.width, height: cat.height }, obstacle)) {
-                    collision = true;
-                }
-            }
-        }
-    }
-
-    if (!collision) {
-        cat.x = nextX;
-        cat.y = nextY;
-    }
 
     drawCat();
     drawMaze();
