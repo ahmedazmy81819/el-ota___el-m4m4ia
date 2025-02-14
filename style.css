@@ -1,0 +1,61 @@
+.touch-control-area {
+    display: none;
+}
+
+.direction-buttons {
+    /* Remove previous centering and sizing so buttons can be fixed individually */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Container no longer handles interaction; buttons do */
+    z-index: 9999;
+}
+
+/* Update directional buttons with fixed positions */
+.direction-button {
+    pointer-events: auto;
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    color: white;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.direction-button:active {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0.95);
+}
+
+/* Position each button according to its direction */
+.button-up {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.button-down {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.button-left {
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.button-right {
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}

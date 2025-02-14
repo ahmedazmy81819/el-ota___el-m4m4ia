@@ -623,61 +623,49 @@ window.addEventListener('resize', () => {
     draw();
 });
 
-// Add mobile controls handling
+// Replace initMobileControls function with this new version
 function initMobileControls() {
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     if (isMobile) {
-        const touchArea = document.querySelector('.touch-control-area');
-        let touchStartX = 0;
-        let touchStartY = 0;
-        const MIN_SWIPE = 20; // تقليل المسافة المطلوبة للسحب
+        // Create direction buttons container
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.className = 'direction-buttons';
         
-        touchArea.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
-
-        touchArea.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!player.moving) {
-                const touchX = e.touches[0].clientX;
-                const touchY = e.touches[0].clientY;
-                
-                const deltaX = touchX - touchStartX;
-                const deltaY = touchY - touchStartY;
-                
-                if (Math.abs(deltaX) > MIN_SWIPE || Math.abs(deltaY) > MIN_SWIPE) {
-                    // تحديد الاتجاه الغالب
-                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        keys.ArrowLeft = deltaX < 0;
-                        keys.ArrowRight = deltaX > 0;
-                        keys.ArrowUp = keys.ArrowDown = false;
-                    } else {
-                        keys.ArrowUp = deltaY < 0;
-                        keys.ArrowDown = deltaY > 0;
-                        keys.ArrowLeft = keys.ArrowRight = false;
-                    }
-                    
-                    // تحديث نقطة البداية للسحبة التالية
-                    touchStartX = touchX;
-                    touchStartY = touchY;
-                }
-            }
-        }, { passive: false });
-
-        touchArea.addEventListener('touchend', () => {
-            keys.ArrowUp = keys.ArrowDown = keys.ArrowLeft = keys.ArrowRight = false;
-        });
-
-        // منع السحب على باقي الصفحة
-        document.addEventListener('touchmove', (e) => {
-            if (!e.target.closest('.touch-control-area')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // Create buttons
+        const buttons = {
+            up: createDirectionButton('⬆', 'button-up', 'ArrowUp'),
+            down: createDirectionButton('⬇', 'button-down', 'ArrowDown'),
+            left: createDirectionButton('⬅', 'button-left', 'ArrowLeft'),
+            right: createDirectionButton('➡', 'button-right', 'ArrowRight')
+        };
+        
+        // Add buttons to container
+        Object.values(buttons).forEach(button => buttonsDiv.appendChild(button));
+        
+        // Add container to document
+        document.body.appendChild(buttonsDiv);
     }
+}
+
+// Add new helper function to create direction buttons
+function createDirectionButton(text, className, keyName) {
+    const button = document.createElement('div');
+    button.className = `direction-button ${className}`;
+    button.textContent = text;
+    
+    // Handle touch events
+    button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys[keyName] = true;
+    }, { passive: false });
+    
+    button.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys[keyName] = false;
+    }, { passive: false });
+    
+    return button;
 }
 
 // Initialize game only after clicking start
