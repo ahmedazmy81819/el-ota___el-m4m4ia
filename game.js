@@ -625,53 +625,51 @@ function initMobileControls() {
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     if (isMobile) {
-        const upBtn = document.getElementById('up');
-        const downBtn = document.getElementById('down');
-        const leftBtn = document.getElementById('left');
-        const rightBtn = document.getElementById('right');
-
-        const handleTouch = (e, isDown, key) => {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const MIN_SWIPE = 30; // الحد الأدنى للسحب
+        
+        canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            keys[key] = isDown;
-            
-            if (isDown && !player.moving) {
-                let dx = 0;
-                let dy = 0;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!player.moving) {
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
                 
-                switch(key) {
-                    case 'ArrowUp': dy = -1; break;
-                    case 'ArrowDown': dy = 1; break;
-                    case 'ArrowLeft': dx = -1; break;
-                    case 'ArrowRight': dx = 1; break;
-                }
+                const deltaX = touchX - touchStartX;
+                const deltaY = touchY - touchStartY;
                 
-                const newX = Math.round(player.x) + dx;
-                const newY = Math.round(player.y) + dy;
-                
-                if (isValidMove(newX, newY)) {
-                    player.targetX = newX;
-                    player.targetY = newY;
-                    player.moving = true;
-                    player.progress = 0;
+                if (Math.abs(deltaX) > MIN_SWIPE || Math.abs(deltaY) > MIN_SWIPE) {
+                    // تحديد الاتجاه الغالب (أفقي أم رأسي)
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        // حركة أفقية
+                        keys.ArrowLeft = deltaX < 0;
+                        keys.ArrowRight = deltaX > 0;
+                        keys.ArrowUp = keys.ArrowDown = false;
+                    } else {
+                        // حركة رأسية
+                        keys.ArrowUp = deltaY < 0;
+                        keys.ArrowDown = deltaY > 0;
+                        keys.ArrowLeft = keys.ArrowRight = false;
+                    }
+                    // تحديث نقطة البداية للسحبة التالية
+                    touchStartX = touchX;
+                    touchStartY = touchY;
                 }
             }
-        };
+        }, { passive: false });
 
-        // Touch handlers for each button
-        upBtn.addEventListener('touchstart', (e) => handleTouch(e, true, 'ArrowUp'));
-        upBtn.addEventListener('touchend', (e) => handleTouch(e, false, 'ArrowUp'));
-        
-        downBtn.addEventListener('touchstart', (e) => handleTouch(e, true, 'ArrowDown'));
-        downBtn.addEventListener('touchend', (e) => handleTouch(e, false, 'ArrowDown'));
-        
-        leftBtn.addEventListener('touchstart', (e) => handleTouch(e, true, 'ArrowLeft'));
-        leftBtn.addEventListener('touchend', (e) => handleTouch(e, false, 'ArrowLeft'));
-        
-        rightBtn.addEventListener('touchstart', (e) => handleTouch(e, true, 'ArrowRight'));
-        rightBtn.addEventListener('touchend', (e) => handleTouch(e, false, 'ArrowRight'));
+        canvas.addEventListener('touchend', () => {
+            // إعادة تعيين جميع المفاتيح
+            keys.ArrowUp = keys.ArrowDown = keys.ArrowLeft = keys.ArrowRight = false;
+        });
 
-        // منع السلوك الافتراضي للمس
+        // منع السحب الافتراضي للصفحة
         document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     }
 }

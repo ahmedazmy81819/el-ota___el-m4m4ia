@@ -40,6 +40,11 @@ body {
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
     margin: auto;                     /* Center horizontally */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .controls {
@@ -61,75 +66,76 @@ button:hover {
     background: #c0392b;
 }
 
-/* Mobile Controls */
+/* حذف أنماط أزرار التحكم السابقة */
 .mobile-controls {
     display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 160px;
-    height: 160px;
-    grid-template-areas: 
-        ". up ."
-        "left . right"
-        ". down .";
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    gap: 8px;
-    z-index: 1000;
 }
 
 .mobile-controls button {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(46, 204, 113, 0.8);
+    width: 55px;
+    height: 55px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(46, 204, 113, 0.6);
     border-radius: 50%;
-    font-size: 28px;
+    font-size: 30px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    backdrop-filter: blur(5px);
+}
+
+/* تحسين موضع كل زر */
+#up { 
+    grid-area: up;
+    margin: 0 auto;
+    border-bottom-width: 1px;
+}
+
+#down { 
+    grid-area: down;
+    margin: 0 auto;
+    border-top-width: 1px;
+}
+
+#left { 
+    grid-area: left;
+    margin: auto 0;
+    border-right-width: 1px;
+}
+
+#right { 
+    grid-area: right;
+    margin: auto 0;
+    border-left-width: 1px;
 }
 
 .mobile-controls button:active {
     background: rgba(46, 204, 113, 0.4);
     transform: scale(0.9);
-    border-color: rgba(46, 204, 113, 1);
 }
 
-#up { 
-    grid-area: up; 
-    margin: auto;
-    transform: translateY(5px); /* تحريك للأعلى قليلاً */
-}
-
-#down { 
-    grid-area: down; 
-    margin: auto;
-    transform: translateY(-5px); /* تحريك للأسفل قليلاً */
-}
-
-#left { 
-    grid-area: left; 
-    margin: auto;
-    transform: translateX(5px); /* تحريك لليسار قليلاً */
-}
-
-#right { 
-    grid-area: right; 
-    margin: auto;
-    transform: translateX(-5px); /* تحريك لليمين قليلاً */
-}
-
-/* Show mobile controls only on touch devices */
+/* إظهار الأزرار فقط على الأجهزة اللمسية */
 @media (hover: none) and (pointer: coarse) {
-    .mobile-controls {
-        display: grid;
+    .game-container::after {
+        content: "اسحب للتحريك";
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 14px;
+        opacity: 0.8;
+        pointer-events: none;
+    }
+    
+    /* إخفاء نص التحكم بالكيبورد */
+    .controls {
+        display: none;
     }
 }
 
