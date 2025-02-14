@@ -71,7 +71,7 @@ button:hover {
     height: 160px;
     grid-template-areas: 
         ". up ."
-        "right . left"
+        "left . right"
         ". down .";
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
@@ -117,13 +117,13 @@ button:hover {
 #left { 
     grid-area: left; 
     margin: auto;
-    transform: translateX(-5px); /* تحريك لليسار قليلاً */
+    transform: translateX(5px); /* تحريك لليسار قليلاً */
 }
 
 #right { 
     grid-area: right; 
     margin: auto;
-    transform: translateX(5px); /* تحريك لليمين قليلاً */
+    transform: translateX(-5px); /* تحريك لليمين قليلاً */
 }
 
 /* Show mobile controls only on touch devices */
