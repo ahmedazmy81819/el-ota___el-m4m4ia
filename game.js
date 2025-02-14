@@ -7,6 +7,9 @@ const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const timeElement = document.getElementById('time');
 
+// إضافة في بداية الملف بعد التعريفات الأساسية
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 // تحديث إعدادات اللعبة
 const config = {
     mazeSize: 51,             // Fixed size for all devices
@@ -625,17 +628,18 @@ function initMobileControls() {
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     if (isMobile) {
+        const touchArea = document.querySelector('.touch-control-area');
         let touchStartX = 0;
         let touchStartY = 0;
-        const MIN_SWIPE = 30; // الحد الأدنى للسحب
+        const MIN_SWIPE = 20; // تقليل المسافة المطلوبة للسحب
         
-        canvas.addEventListener('touchstart', (e) => {
+        touchArea.addEventListener('touchstart', (e) => {
             e.preventDefault();
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
         }, { passive: false });
 
-        canvas.addEventListener('touchmove', (e) => {
+        touchArea.addEventListener('touchmove', (e) => {
             e.preventDefault();
             if (!player.moving) {
                 const touchX = e.touches[0].clientX;
@@ -645,18 +649,17 @@ function initMobileControls() {
                 const deltaY = touchY - touchStartY;
                 
                 if (Math.abs(deltaX) > MIN_SWIPE || Math.abs(deltaY) > MIN_SWIPE) {
-                    // تحديد الاتجاه الغالب (أفقي أم رأسي)
+                    // تحديد الاتجاه الغالب
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        // حركة أفقية
                         keys.ArrowLeft = deltaX < 0;
                         keys.ArrowRight = deltaX > 0;
                         keys.ArrowUp = keys.ArrowDown = false;
                     } else {
-                        // حركة رأسية
                         keys.ArrowUp = deltaY < 0;
                         keys.ArrowDown = deltaY > 0;
                         keys.ArrowLeft = keys.ArrowRight = false;
                     }
+                    
                     // تحديث نقطة البداية للسحبة التالية
                     touchStartX = touchX;
                     touchStartY = touchY;
@@ -664,13 +667,16 @@ function initMobileControls() {
             }
         }, { passive: false });
 
-        canvas.addEventListener('touchend', () => {
-            // إعادة تعيين جميع المفاتيح
+        touchArea.addEventListener('touchend', () => {
             keys.ArrowUp = keys.ArrowDown = keys.ArrowLeft = keys.ArrowRight = false;
         });
 
-        // منع السحب الافتراضي للصفحة
-        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        // منع السحب على باقي الصفحة
+        document.addEventListener('touchmove', (e) => {
+            if (!e.target.closest('.touch-control-area')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
 }
 
